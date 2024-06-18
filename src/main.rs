@@ -11,7 +11,7 @@ use std::io::{stdout, Result};
 use std::process::{Command, Stdio};
 
 fn main() -> Result<()> {
-    get_windows_system_information();
+    let system_info = get_windows_system_information();
 
     stdout().execute(EnterAlternateScreen)?;
     enable_raw_mode()?;
@@ -19,10 +19,10 @@ fn main() -> Result<()> {
     terminal.clear()?;
 
 
-    let os_info = ["Item 1", "Item 2", "Item 3"];
-
+    let mut os_info = vec!();
+    os_info.push(get_os(system_info));
+        
     let os_info_list = List::new(os_info)
-                .block(Block::bordered().title("List"))
                 .style(Style::default().fg(Color::White))
                 .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
                 .highlight_symbol(">>")
@@ -74,4 +74,12 @@ fn get_windows_system_information() -> Vec<String> {
     }
 
     return result;
+}
+
+fn get_os(os_information: Vec<String>) -> String {
+    let os_name = os_information
+        .iter()
+        .find(|info| info.contains("OS Name:"));
+
+    return "OS: ".to_owned() + &os_name.unwrap().to_string().strip_prefix("OS Name:").unwrap().trim().to_string();
 }
