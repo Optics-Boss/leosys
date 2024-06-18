@@ -53,31 +53,25 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_windows_system_information() -> String {
+fn get_windows_system_information() -> Vec<String> {
     let str;
 
     let system_info = Command::new("systeminfo")
         .stdout(Stdio::piped())
-        .spawn()
+        .output()
         .unwrap();
 
-    let find_str = Command::new("findstr")
-        .arg("/b \"OS Name:\"")
-        .stdin(Stdio::from(system_info.stdout.unwrap()))
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
-
-    let output = find_str.wait_with_output().unwrap();
-
-    println!("{:?}", std::str::from_utf8(&output.stdout));
-
-    str = match std::str::from_utf8(&output.stdout) {
+    str = match std::str::from_utf8(&system_info.stdout) {
         Ok(val) => val,
         Err(_) => panic!("No system info found"),
     };
 
-    println!("{:?}", str);
+    let parts = str.split("\r\n");
+    let mut result : Vec<String> = vec![];
 
-    return str.to_string();
+    for part in parts {
+        result.push(part.to_string())
+    }
+
+    return result;
 }
