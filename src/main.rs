@@ -20,7 +20,9 @@ fn main() -> Result<()> {
 
 
     let mut os_info = vec!();
-    os_info.push(get_os(system_info));
+    os_info.push(get_os(&system_info));
+    os_info.push(get_host(&system_info));
+    os_info.push(get_memory(&system_info));
         
     let os_info_list = List::new(os_info)
                 .style(Style::default().fg(Color::White))
@@ -76,10 +78,49 @@ fn get_windows_system_information() -> Vec<String> {
     return result;
 }
 
-fn get_os(os_information: Vec<String>) -> String {
+fn get_os(os_information: &Vec<String>) -> String {
     let os_name = os_information
         .iter()
         .find(|info| info.contains("OS Name:"));
 
     return "OS: ".to_owned() + &os_name.unwrap().to_string().strip_prefix("OS Name:").unwrap().trim().to_string();
+}
+
+fn get_host(os_information: &Vec<String>) -> String {
+    let host_name = os_information
+        .iter()
+        .find(|info| info.contains("Host Name:"));
+
+    return "Host: ".to_owned() + &host_name.unwrap().to_string().strip_prefix("Host Name:").unwrap().trim().to_string();
+}
+
+fn get_memory(os_information: &Vec<String>) -> String {
+    let total_memory : f32 = os_information
+        .iter()
+        .find(|info| info.contains("Total Physical Memory:"))
+        .unwrap()
+        .strip_prefix("Total Physical Memory:")
+        .unwrap()
+        .strip_suffix("MB")
+        .unwrap()
+        .trim()
+        .parse()
+        .expect("String is not a number");
+
+    let available_memory : f32 = os_information
+        .iter()
+        .find(|info| info.contains("Available Physical Memory:"))
+        .unwrap()
+        .strip_prefix("Available Physical Memory:")
+        .unwrap()
+        .strip_suffix("MB")
+        .unwrap()
+        .trim()
+        .parse()
+        .expect("String is not a number");
+
+    let used_memory = total_memory - available_memory;
+
+
+    return "Memory: ".to_owned() + &used_memory.to_string() + " / " + &total_memory.to_string();
 }
